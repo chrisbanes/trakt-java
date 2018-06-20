@@ -1,84 +1,94 @@
 package com.uwetrottmann.trakt5;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonReader;
+import com.squareup.moshi.JsonWriter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Moshi.Builder;
 import com.uwetrottmann.trakt5.enums.ListPrivacy;
 import com.uwetrottmann.trakt5.enums.Rating;
 import com.uwetrottmann.trakt5.enums.Status;
+import java.io.IOException;
+import javax.annotation.Nullable;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.OffsetDateTime;
 
-import java.lang.reflect.Type;
-
 public class TraktV2Helper {
-
-    public static GsonBuilder getGsonBuilder() {
-        GsonBuilder builder = new GsonBuilder();
+    public static Moshi.Builder getMoshiBuilder() {
+        Moshi.Builder builder = new Builder();
 
         // trakt exclusively uses ISO 8601 date times with milliseconds and time zone offset
         // such as '2011-12-03T10:15:30.000+01:00' or '2011-12-03T10:15:30.000Z'
-        builder.registerTypeAdapter(OffsetDateTime.class, new JsonDeserializer<OffsetDateTime>() {
+        builder.add(OffsetDateTime.class, new JsonAdapter<OffsetDateTime>() {
+            @Nullable
             @Override
-            public OffsetDateTime deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                return OffsetDateTime.parse(json.getAsString());
+            public OffsetDateTime fromJson(JsonReader jsonReader) throws IOException {
+                return OffsetDateTime.parse(jsonReader.nextString());
             }
-        });
-        builder.registerTypeAdapter(OffsetDateTime.class, new JsonSerializer<OffsetDateTime>() {
+
             @Override
-            public JsonElement serialize(OffsetDateTime src, Type typeOfSrc, JsonSerializationContext context) {
-                return new JsonPrimitive(src.toString());
-            }
-        });
-        // dates are in ISO 8601 format as well
-        builder.registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
-            @Override
-            public LocalDate deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                return LocalDate.parse(json.getAsString());
+            public void toJson(JsonWriter jsonWriter, @Nullable OffsetDateTime o) throws IOException {
+                jsonWriter.value(o.toString());
+
             }
         });
 
-        // privacy
-        builder.registerTypeAdapter(ListPrivacy.class, new JsonDeserializer<ListPrivacy>() {
+        // dates are in ISO 8601 format as well
+        builder.add(LocalDate.class, new JsonAdapter<LocalDate>() {
+            @Nullable
             @Override
-            public ListPrivacy deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                return ListPrivacy.fromValue(json.getAsString());
+            public LocalDate fromJson(JsonReader jsonReader) throws IOException {
+                return LocalDate.parse(jsonReader.nextString());
+            }
+
+            @Override
+            public void toJson(JsonWriter jsonWriter, @Nullable LocalDate o) throws IOException {
+                jsonWriter.value(o.toString());
+            }
+        });
+
+
+        // list privacy
+        builder.add(ListPrivacy.class, new JsonAdapter<ListPrivacy>() {
+            @Nullable
+            @Override
+            public ListPrivacy fromJson(JsonReader jsonReader) throws IOException {
+                return ListPrivacy.fromValue(jsonReader.nextString());
+            }
+
+            @Override
+            public void toJson(JsonWriter jsonWriter, @Nullable ListPrivacy o) throws IOException {
+                jsonWriter.value(o.toString());
             }
         });
 
         // rating
-        builder.registerTypeAdapter(Rating.class, new JsonDeserializer<Rating>() {
+        builder.add(Rating.class, new JsonAdapter<Rating>() {
+            @Nullable
             @Override
-            public Rating deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                return Rating.fromValue(json.getAsInt());
+            public Rating fromJson(JsonReader jsonReader) throws IOException {
+                return Rating.fromValue(jsonReader.nextInt());
             }
-        });
-        builder.registerTypeAdapter(Rating.class, new JsonSerializer<Rating>() {
+
             @Override
-            public JsonElement serialize(Rating src, Type typeOfSrc, JsonSerializationContext context) {
-                return new JsonPrimitive(src.value);
+            public void toJson(JsonWriter jsonWriter, @Nullable Rating o) throws IOException {
+                jsonWriter.value(o.value);
             }
         });
 
         // status
-        builder.registerTypeAdapter(Status.class, new JsonDeserializer<Status>() {
+        builder.add(Status.class, new JsonAdapter<Status>() {
+            @Nullable
             @Override
-            public Status deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                return Status.fromValue(json.getAsString());
+            public Status fromJson(JsonReader jsonReader) throws IOException {
+                return Status.fromValue(jsonReader.nextString());
+            }
+
+            @Override
+            public void toJson(JsonWriter jsonWriter, @Nullable Status o) throws IOException {
+                jsonWriter.value(o.toString());
             }
         });
-
         return builder;
     }
-
 }

@@ -17,18 +17,17 @@ import com.uwetrottmann.trakt5.services.Seasons;
 import com.uwetrottmann.trakt5.services.Shows;
 import com.uwetrottmann.trakt5.services.Sync;
 import com.uwetrottmann.trakt5.services.Users;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
+import java.net.URLEncoder;
+import javax.annotation.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Annotation;
-import java.net.URLEncoder;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 
 /**
  * Helper class for easy usage of the trakt v2 API using retrofit.
@@ -129,7 +128,7 @@ public class TraktV2 {
     protected Retrofit.Builder retrofitBuilder() {
         return new Retrofit.Builder()
                 .baseUrl(API_URL)
-                .addConverterFactory(GsonConverterFactory.create(TraktV2Helper.getGsonBuilder().create()))
+                .addConverterFactory(MoshiConverterFactory.create(TraktV2Helper.getMoshiBuilder().build()))
                 .client(okHttpClient());
     }
 
